@@ -43,4 +43,4 @@ hosts = [str(i) for r in sys.argv[3].split(',') for i in ipaddress.IPv4Network(r
 print('SENDING ICMP PING', len(hosts))
 results = multiprocessing.dummy.Pool(int(sys.argv[2])).map(ping, hosts)
 
-# USAGE: sudo ./ping_send.py 3 128 192.168.1.0/24
+# USAGE: sudo ./ping_send.py 3 128 192.168.1.0/24 

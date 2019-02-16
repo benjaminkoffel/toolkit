@@ -4,16 +4,12 @@ import multiprocessing.dummy
 import socket
 import sys
 
-def tcp(host, port, connect_timeout, send_timeout):
+def udp(host, port, send_timeout):
     status = 'CLS'
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        s.settimeout(connect_timeout)
-        s.connect((host, port))
-        status = 'CON'
         s.settimeout(send_timeout)
-        s.send(b'fDe2')
-        status = 'SND'
+        s.sendto(b'fDe2', (host, port))
         s.recv(8)
         status = 'RCV'
     except socket.error as e:
@@ -22,7 +18,7 @@ def tcp(host, port, connect_timeout, send_timeout):
         s.close()
     return host, port, status
 
-default_ports = range(1, 65535)
+default_ports = range(1, 1023)
 
 ports = [int(i) for i in sys.argv[2].split(',')] if len(sys.argv) > 2 else default_ports
 
@@ -34,11 +30,11 @@ else:
 
 ips = [str(i) for r in ranges for i in ipaddress.IPv4Network(r)]
 
-params = [(i, p, 0.1, 0.1) for i in ips for p in ports]
+params = [(i, p, 0) for i in ips for p in ports]
 
 pool = multiprocessing.dummy.Pool(128)
 
-results = pool.starmap(tcp, params)
+results = pool.starmap(udp, params)
 
 hosts = {}
 
@@ -48,8 +44,8 @@ for ip, port, status in results:
     hosts[ip][port] = status
 
 for ip, scan in hosts.items():
-    print(ip, ' '.join('{}/{}'.format(p, s) for p, s in scan.items() if s != 'CLS'))
+    print(ip, ' '.join('{}/{}'.format(p, s) for p, s in scan.items() if s in ['RCV']))
 
-# USAGE: ./mscan.py 192.168.1.4
-# USAGE: ./mscan.py 192.168.1.0/24,192.168.2.0/24 80,443
-# USAGE: ./mscan.py ./file.txt 80,443
+# USAGE: ./udp_scan.py 192.168.1.4
+# USAGE: ./udp_scan.py 192.168.1.0/24,192.168.2.0/24 80,443
+# USAGE: ./udp_scan.py ./file.txt 80,443

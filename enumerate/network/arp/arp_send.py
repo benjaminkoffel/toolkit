@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import binascii, os, sys, socket, struct, time, ipaddress, multiprocessing.dummy
+import binascii, ipaddress, multiprocessing.dummy, os, socket, struct, sys, time
 
 def arp(dest_addr):
     mac_addr = binascii.unhexlify(sys.argv[5].replace(':', ''))
